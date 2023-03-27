@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CHECKLIST</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <h1>CHECKLIST</h1>
 
     <form>
-        <input type="text" id="taskInput" required>
-        <button type="submit">Add</button>
+      <input type="text" id="taskInput" required />
+      <button type="submit">Add</button>
     </form>
     <h2>To do</h2>
-    <ul id="taskList" style="list-style: none; padding: 0;"></ul>
+    <ul id="taskList" style="list-style: none; padding: 0"></ul>
     <button id="deleteButton">Mark as done</button>
-    <ul id="doneTasksList" style="list-style: none; padding: 0;"></ul>
-
+    <ul id="doneTasksList" style="list-style: none; padding: 0"></ul>
 
     <script src="script.js"></script>
-
-</body>
-
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+    </script>
+  </body>
 </html>
