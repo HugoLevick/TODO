@@ -1,7 +1,7 @@
 async function queryDatabase(sql, connection) {
-  const queryResults = await new Promise((resolve) => {
+  const queryResults = await new Promise((resolve, reject) => {
     connection.query(sql, function (error, results) {
-      if (error) throw error;
+      if (error) reject(error);
       resolve(results);
     });
   });

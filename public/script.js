@@ -7,25 +7,31 @@ function invalidTask() {
 }
 
 function success() {
-  Swal.fire(
-    'Good job!',
-    'The task was added!',
-    'success'
-  )
+  Swal.fire("Good job!", "The task was added!", "success");
 }
 
+async function showTasks() {
+  const allTasks = await fetch("/api/tareas").then(response => response.json())
+  for (const task of allTasks) {
+    printTask(task)
+  }
+  console.log(allTasks)
+}
 
 const taskList = document.getElementById("taskList"); // get the list element
 const taskInput = document.getElementById("taskInput"); // get the input element
 const addButton = document.querySelector("form button"); // get the submit button
 const deleteButton = document.getElementById("markAsDoneButton"); // get the 'Mark as done' button
+const doneTasksList = document.getElementById("doneTasksList"); 
 
+showTasks()
 
 async function addTask() {
   // function to add a new task to the list
-  const title = taskInput.value.trim()
-  if (title === ''){ // looking for an empty value
-    invalidTask()
+  const title = taskInput.value.trim();
+  if (title === "") {
+    // looking for an empty value
+    invalidTask();
   }
 
   
@@ -44,108 +50,62 @@ async function addTask() {
 
 function printTask(tarea) {
   const newTask = document.createElement("li");
-  newTask.id = 'tarea='+tarea.id
+  newTask.id = tarea.id
   const newTaskLabel = document.createElement("label");
   const newTaskCheckbox = document.createElement("input");
   newTaskCheckbox.type = "checkbox"; // set the input type to checkbox
   newTaskLabel.appendChild(newTaskCheckbox);
   newTaskLabel.appendChild(document.createTextNode(tarea.title));
   newTask.appendChild(newTaskLabel);
-  taskList.appendChild(newTask); // Add the new task to the list
+  if (tarea.status === "TODO"){
+    taskList.appendChild(newTask); // Add the new task to the list
+  }else {
+    const doneTasksList = document.getElementById("doneTasksList");
+    doneTasksList.appendChild(newTask);
+  }
   taskInput.value = ""; // Clear the input field
 }
 
-function doneTask(tarea) {
+async function doneTask() {
   const checkboxes = taskList.querySelectorAll('input[type="checkbox"]'); // Get all the checkboxes in the list
-  checkboxes.forEach(function (checkbox) {
+  checkboxes.forEach(async function (checkbox) {
     if (checkbox.checked) {
-      // check if the checkbox is checked
-      const listItem = checkbox.parentNode; // get the list item that contains the checkbox
-      const doneTask = document.createElement("li");
-      console.log(listItem);
-      doneTask.appendChild(listItem);
-      doneTasksList.appendChild(doneTask);
-
-      checkbox.checked = false; // uncheck the selected task when is done
-      //listItem.parentNode.removeChild(listItem); // remove the list item from the list
+      const taskHTML = checkbox.parentElement.parentElement;
+      const id = taskHTML.id
+      const response = await fetch("/api/tareas/"+id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" }
+      })
+      if (response.ok) {
+        success();
+      }else {
+        alert('no se pudo')
+      }
     }
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const doneTasksList = document.getElementById("doneTasksList");
-
-// function to mark as done tasks
-function doneTasks() {
-  const checkboxes = taskList.querySelectorAll('input[type="checkbox"]'); // Get all the checkboxes in the list
-  checkboxes.forEach(function (checkbox) {
-    if (checkbox.checked) {
-      // check if the checkbox is checked
-      const listItem = checkbox.parentNode; // get the list item that contains the checkbox
-      const doneTask = document.createElement("li");
-      console.log(listItem);
-      doneTask.appendChild(listItem);
-      doneTasksList.appendChild(doneTask);
-
-      checkbox.checked = false; // uncheck the selected task when is done
-      //listItem.parentNode.removeChild(listItem); // remove the list item from the list
     }
-  });
-  // Remove empty list items
-  const listItems = taskList.querySelectorAll("li");
-  listItems.forEach(function (listItem) {
-    if (!listItem.hasChildNodes()) {
-      listItem.parentNode.removeChild(listItem);
-    }
-  });
-}
+)}
 
-// fucntion to delete done tasks
-function doneTasks() {
-  const checkboxes = taskList.querySelectorAll('input[type="checkbox"]'); // Get all the checkboxes in the list
-  checkboxes.forEach(function (checkbox) {
-    if (checkbox.checked) {
-      // check if the checkbox is checked
-      const listItem = checkbox.parentNode; // get the list item that contains the checkbox
-      const doneTask = document.createElement("li");
-      console.log(listItem);
-      doneTask.appendChild(listItem);
-      doneTasksList.appendChild(doneTask);
 
-      checkbox.checked = false; // uncheck the selected task when is done
-      //listItem.parentNode.removeChild(listItem); // remove the list item from the list
-    }
-  });
-  // Remove empty list items
-  const listItems = taskList.querySelectorAll("li");
-  listItems.forEach(function (listItem) {
-    if (!listItem.hasChildNodes()) {
-      listItem.parentNode.removeChild(listItem);
-    }
-  });
-}
+
+
+
+
+
+  // const id = 
+  // for (const task of allTasks) {
+  //   const response = await fetch("/api/tareas/"+id, {
+  //     method: "PATCH",
+  //     headers: { "Content-Type": "application/json" }
+  //   })
+  //   if (response.ok) {
+  //     success();
+  //   }else {
+  //     invalidTask()
+  //   }
+  // }
+  
+
+
 
 function deleteTasks() {
   const listItems = doneTasksList.querySelectorAll("li");
