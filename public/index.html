@@ -11,22 +11,24 @@
   <body>
     <h1>CHECKLIST</h1>
 
-    <form>
+    <div>
       <input type="text" id="taskInput" required />
-      <button type="submit">Add</button>
-    </form>
-    <h2>To do</h2>
-    <ul id="taskList" style="list-style: none; padding: 0"></ul>
-    <button id="deleteButton">Mark as done</button>
-    <ul id="doneTasksList" style="list-style: none; padding: 0"></ul>
+      <button onclick="addTask()">Add</button>
+    </div>
 
-    <script src="script.js"></script>
+    <div>
+      <h2>To do</h2>
+      <ul id="taskList" style="list-style: none; padding: 0"></ul>
+      <button id="markAsDoneButton">Mark as done</button>
+    </div>
+
+    <div>
+      <h2>Done tasks</h2>
+      <ul id="doneTasksList" style="list-style: none; padding: 0"></ul>
+      <button id="deleteButton">Delete</button>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-      var socket = io();
-      socket.on("nueva-tarea", (tarea) => {
-        console.log(tarea);
-      });
-    </script>
+    <script src="script.js"></script>
   </body>
 </html>

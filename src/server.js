@@ -18,21 +18,48 @@ async function startServer() {
   });
 
   connection.connect();
-  await queryDatabase("CREATE DATABASE IF NOT EXISTS todolist;", connection);
+  const createQuery = await queryDatabase("CREATE DATABASE IF NOT EXISTS todolist;", connection);
+  //Si la base de datos se acaba de crear
+  if (createQuery.warningStatus === 0) {
+    console.log("Creando base de datos...");
+    await queryDatabase("CREATE TABLE `todolist`.`tasks` ( `id` INT NOT NULL AUTO_INCREMENT , `title` VARCHAR(100) UNIQUE NOT NULL , PRIMARY KEY (`id`), `status` ENUM('DONE','TODO') NOT NULL DEFAULT 'TODO');", connection);
+    console.log("Base de datos creada");
+  }
   await queryDatabase("USE todolist;", connection);
 
   app.use(bodyParser.json()); // for parsing application/json
   app.use(express.static("public"));
 
-  app.post("/api/tareas", (req, res) => {
-    const { title } = req.body;
+  app.get("/api/tareas", async (req, res) => {
+    const tareas = await queryDatabase("SELECT * FROM tasks", connection);
+    res.send(tareas);
+  });
+
+  app.post("/api/tareas", async (req, res) => {
+    let { title } = req.body;
     if (!title || typeof title === "number") {
       res.status(400);
       res.send({ message: "Provea un titulo valido" });
       return;
     }
 
-    const tarea = { id: 1, title };
+    let tarea = { title };
+    try {
+      title = title.replace(/'/gi, "\\'");
+      const queryRes = await queryDatabase(`INSERT INTO tasks (title) VALUES ('${title}')`, connection);
+      tarea.id = queryRes.insertId;
+    } catch (error) {
+      if (error.code === "ER_DUP_ENTRY") {
+        res.status(400);
+        res.send({ message: "Entrada duplicada" });
+        return;
+      }
+
+      res.status(500);
+      res.send({ message: "Sucedio algo inesperado" });
+      console.log(error);
+      return;
+    }
     io.emit("nueva-tarea", tarea);
     res.send(tarea);
   });
