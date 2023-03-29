@@ -43,7 +43,7 @@ async function startServer() {
       return;
     }
 
-    let tarea = { title };
+    let tarea = { title, status: "TODO" };
     try {
       title = title.replace(/'/gi, "\\'");
       const queryRes = await queryDatabase(`INSERT INTO tasks (title) VALUES ('${title}')`, connection);
@@ -64,15 +64,20 @@ async function startServer() {
     res.send(tarea);
   });
 
-  app.patch("/api/tareas/:id", (req, res) => {
-    const { id } = req.params;
-    if (!id) {
+  app.patch("/api/tareas/:id", async (req, res) => {
+    let { id } = req.params;
+    id = parseInt(id);
+    if (!id || isNaN(id)) {
       res.status(400);
       res.send({ message: "Provea un id valido" });
       return;
     }
 
-    res.send({ id });
+    await queryDatabase(`UPDATE tasks SET status = 'DONE' WHERE tasks.id = ${id};`, connection);
+    const [tarea] = await queryDatabase(`SELECT * FROM tasks WHERE tasks.id = ${id};`, connection);
+
+    io.emit("nueva-tarea", tarea);
+    res.send(tarea);
   });
 
   io.on("connection", (socket) => {
