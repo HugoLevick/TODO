@@ -85,6 +85,24 @@ async function doneTask() {
     }
 )}
 
+async function deleteTask() {
+  const checkboxes = doneTasksList.querySelectorAll('input[type="checkbox"]'); // Get all the checkboxes in the list
+  checkboxes.forEach(async function (checkbox) {
+    if (checkbox.checked) {
+      const taskHTML = checkbox.parentElement.parentElement;
+      const id = taskHTML.id.replace("t", "")
+      const response = await fetch("/api/tareas/"+id, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      })
+      if (response.ok) {
+        success();
+      }else {
+        alert('no se pudo')
+      }
+    }
+    }
+)}
 
 
 
