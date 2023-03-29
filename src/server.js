@@ -72,7 +72,7 @@ async function startServer() {
       return;
     }
 
-    res.send(id);
+    res.send({ id });
   });
 
   io.on("connection", (socket) => {
