@@ -24,6 +24,9 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
       var socket = io();
+      socket.on("nueva-tarea", (tarea) => {
+        console.log(tarea);
+      });
     </script>
   </body>
 </html>

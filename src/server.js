@@ -1,4 +1,5 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const http = require("http");
 const server = http.createServer(app);
@@ -20,14 +21,29 @@ async function startServer() {
   await queryDatabase("CREATE DATABASE IF NOT EXISTS todolist;", connection);
   await queryDatabase("USE todolist;", connection);
 
+  app.use(bodyParser.json()); // for parsing application/json
+  app.use(express.static("public"));
+
+  app.post("/api/tareas", (req, res) => {
+    const { title } = req.body;
+    if (!title || typeof title === "number") {
+      res.status(400);
+      res.send({ message: "Provea un titulo valido" });
+      return;
+    }
+
+    const tarea = { id: 1, title };
+    io.emit("nueva-tarea", tarea);
+    res.send(tarea);
+  });
+
   io.on("connection", (socket) => {
     console.log("user connected");
+
     socket.on("disconnect", () => {
       console.log("user disconnected");
     });
   });
-
-  app.use(express.static("public"));
 
   server.listen(process.env.PORT, () => {
     console.log("listening on " + process.env.PORT);
