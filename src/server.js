@@ -1,13 +1,14 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const app = express();
 const http = require("http");
-const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
 const mysql = require("mysql2");
 const queryDatabase = require("./helpers/queryDB");
-require("dotenv").config();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 async function startServer() {
   const connection = mysql.createConnection({
@@ -27,6 +28,14 @@ async function startServer() {
   }
   await queryDatabase("USE todolist;", connection);
 
+  io.on("connection", (socket) => {
+    console.log("Un usuario se conectó:", socket.id);
+
+    socket.on("disconnect", () => {
+      console.log("Un usuario se desconectó:", socket.id);
+    });
+  });
+
   app.use(bodyParser.json()); // for parsing application/json
   app.use(express.static("public"));
 
@@ -37,9 +46,9 @@ async function startServer() {
 
   app.post("/api/tareas", async (req, res) => {
     let { title } = req.body;
-    if (!title || typeof title === "number") {
+    if (!title || typeof title === "number" || title.length > 100) {
       res.status(400);
-      res.send({ message: "Provea un titulo valido" });
+      res.send({ message: "Provea un titulo valido: debe ser una cadena de texto y no debe exceder los 100 caracteres" });
       return;
     }
 
@@ -54,13 +63,14 @@ async function startServer() {
         res.send({ message: "Entrada duplicada" });
         return;
       }
-
       res.status(500);
       res.send({ message: "Sucedio algo inesperado" });
       console.log(error);
       return;
     }
+
     io.emit("nueva-tarea", tarea);
+    res.status(201);
     res.send(tarea);
   });
 
@@ -73,8 +83,14 @@ async function startServer() {
       return;
     }
 
-    await queryDatabase(`UPDATE tasks SET status = 'DONE' WHERE tasks.id = ${id};`, connection);
     const [tarea] = await queryDatabase(`SELECT * FROM tasks WHERE tasks.id = ${id};`, connection);
+    if (!tarea) {
+      res.status(404);
+      res.send({ message: `Tarea #${id} no encontrada` });
+      return;
+    }
+    await queryDatabase(`UPDATE tasks SET status = 'DONE' WHERE tasks.id = ${id};`, connection);
+    tarea.status = "DONE";
 
     io.emit("actualizar-tarea", tarea);
     res.send(tarea);
@@ -89,18 +105,16 @@ async function startServer() {
       return;
     }
 
+    const [tarea] = await queryDatabase(`SELECT * FROM tasks WHERE tasks.id = ${id};`, connection);
+    if (!tarea) {
+      res.status(404);
+      res.send({ message: `Tarea #${id} no encontrada` });
+      return;
+    }
     await queryDatabase(`DELETE FROM tasks WHERE tasks.id = ${id};`, connection);
 
     io.emit("borrar-tarea", id);
     res.end();
-  });
-
-  io.on("connection", (socket) => {
-    console.log("Un usuario se conecto");
-
-    socket.on("disconnect", () => {
-      console.log("Un usuario se desconecto");
-    });
   });
 
   server.listen(process.env.PORT, () => {
