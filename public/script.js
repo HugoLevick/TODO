@@ -20,6 +20,7 @@ const taskInput = document.getElementById("taskInput"); // get the input element
 const addButton = document.querySelector("form button"); // get the submit button
 const deleteButton = document.getElementById("markAsDoneButton"); // get the 'Mark as done' button
 
+
 async function addTask() {
   // function to add a new task to the list
   const title = taskInput.value.trim()
@@ -27,29 +28,72 @@ async function addTask() {
     invalidTask()
   }
 
-  try {
-    await fetch("/api/tareas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({title})
-    })
+  
+  const response = await fetch("/api/tareas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({title})
+  })
+  if (response.ok) {
     success();
-  } catch (error) {
-    invalidTask();
-    return;
+  }else {
+    invalidTask()
   }
-
-  // // create a new task
-  // const newTask = document.createElement("li");
-  // const newTaskLabel = document.createElement("label");
-  // const newTaskCheckbox = document.createElement("input");
-  // newTaskCheckbox.type = "checkbox"; // set the input type to checkbox
-  // newTaskLabel.appendChild(newTaskCheckbox);
-  // newTaskLabel.appendChild(document.createTextNode(taskInput.value));
-  // newTask.appendChild(newTaskLabel);
-  // taskList.appendChild(newTask); // Add the new task to the list
-  // taskInput.value = ""; // Clear the input field
 }
+
+
+function printTask(tarea) {
+  const newTask = document.createElement("li");
+  newTask.id = 'tarea='+tarea.id
+  const newTaskLabel = document.createElement("label");
+  const newTaskCheckbox = document.createElement("input");
+  newTaskCheckbox.type = "checkbox"; // set the input type to checkbox
+  newTaskLabel.appendChild(newTaskCheckbox);
+  newTaskLabel.appendChild(document.createTextNode(tarea.title));
+  newTask.appendChild(newTaskLabel);
+  taskList.appendChild(newTask); // Add the new task to the list
+  taskInput.value = ""; // Clear the input field
+}
+
+function doneTask(tarea) {
+  const checkboxes = taskList.querySelectorAll('input[type="checkbox"]'); // Get all the checkboxes in the list
+  checkboxes.forEach(function (checkbox) {
+    if (checkbox.checked) {
+      // check if the checkbox is checked
+      const listItem = checkbox.parentNode; // get the list item that contains the checkbox
+      const doneTask = document.createElement("li");
+      console.log(listItem);
+      doneTask.appendChild(listItem);
+      doneTasksList.appendChild(doneTask);
+
+      checkbox.checked = false; // uncheck the selected task when is done
+      //listItem.parentNode.removeChild(listItem); // remove the list item from the list
+    }
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const doneTasksList = document.getElementById("doneTasksList");
 
@@ -113,18 +157,73 @@ function deleteTasks() {
   });
 }
 
-// Add event listeners to the buttons
-addButton.addEventListener("click", function (event) {
-  event.preventDefault(); // Prevent the default form submission behavior
-  addTask();
-});
 
-deleteButton.addEventListener("click", function (event) {
-  event.preventDefault();
-  deleteTasks();
-});
 
-markAsDoneButton.addEventListener("click", function (event) {
-  event.preventDefault(); // Prevent the default form submission behavior
-  doneTasks();
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Add event listeners to the buttons
+// addButton.addEventListener("click", function (event) {
+//   event.preventDefault(); // Prevent the default form submission behavior
+//   addTask();
+// });
+
+// deleteButton.addEventListener("click", function (event) {
+//   event.preventDefault();
+//   deleteTasks();
+// });
+
+// markAsDoneButton.addEventListener("click", function (event) {
+//   event.preventDefault(); // Prevent the default form submission behavior
+//   doneTasks();
+// });
+
+
+
+
+
+
+
+  // // create a new task
+  // const newTask = document.createElement("li");
+  // const newTaskLabel = document.createElement("label");
+  // const newTaskCheckbox = document.createElement("input");
+  // newTaskCheckbox.type = "checkbox"; // set the input type to checkbox
+  // newTaskLabel.appendChild(newTaskCheckbox);
+  // newTaskLabel.appendChild(document.createTextNode(taskInput.value));
+  // newTask.appendChild(newTaskLabel);
+  // taskList.appendChild(newTask); // Add the new task to the list
+  // taskInput.value = ""; // Clear the input field
