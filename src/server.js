@@ -76,20 +76,35 @@ async function startServer() {
     await queryDatabase(`UPDATE tasks SET status = 'DONE' WHERE tasks.id = ${id};`, connection);
     const [tarea] = await queryDatabase(`SELECT * FROM tasks WHERE tasks.id = ${id};`, connection);
 
-    io.emit("nueva-tarea", tarea);
+    io.emit("actualizar-tarea", tarea);
     res.send(tarea);
   });
 
+  app.delete("/api/tareas/:id", async (req, res) => {
+    let { id } = req.params;
+    id = parseInt(id);
+    if (!id || isNaN(id)) {
+      res.status(400);
+      res.send({ message: "Provea un id valido" });
+      return;
+    }
+
+    await queryDatabase(`DELETE FROM tasks WHERE tasks.id = ${id};`, connection);
+
+    io.emit("borrar-tarea", id);
+    res.end();
+  });
+
   io.on("connection", (socket) => {
-    console.log("user connected");
+    console.log("Un usuario se conecto");
 
     socket.on("disconnect", () => {
-      console.log("user disconnected");
+      console.log("Un usuario se desconecto");
     });
   });
 
   server.listen(process.env.PORT, () => {
-    console.log("listening on " + process.env.PORT);
+    console.log("Aplicacion corriendo en el puerto", process.env.PORT);
   });
 }
 startServer();
