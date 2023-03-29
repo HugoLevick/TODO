@@ -50,7 +50,7 @@ async function addTask() {
 
 function printTask(tarea) {
   const newTask = document.createElement("li");
-  newTask.id = tarea.id
+  newTask.id = "t"+tarea.id
   const newTaskLabel = document.createElement("label");
   const newTaskCheckbox = document.createElement("input");
   newTaskCheckbox.type = "checkbox"; // set the input type to checkbox
@@ -71,7 +71,7 @@ async function doneTask() {
   checkboxes.forEach(async function (checkbox) {
     if (checkbox.checked) {
       const taskHTML = checkbox.parentElement.parentElement;
-      const id = taskHTML.id
+      const id = taskHTML.id.replace("t", "")
       const response = await fetch("/api/tareas/"+id, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" }
