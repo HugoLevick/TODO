@@ -64,6 +64,17 @@ async function startServer() {
     res.send(tarea);
   });
 
+  app.patch("/api/tareas/:id", (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400);
+      res.send({ message: "Provea un id valido" });
+      return;
+    }
+
+    res.send(id);
+  });
+
   io.on("connection", (socket) => {
     console.log("user connected");
 
